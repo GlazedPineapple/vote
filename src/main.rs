@@ -1,4 +1,8 @@
-use rocket::{figment::{Figment, providers::Env}, launch, routes};
+use reqwest::Client as ReqClient;
+use rocket::{
+    figment::{providers::Env, Figment},
+    launch, routes,
+};
 use serde::Deserialize;
 use twilight_model::id::ApplicationId;
 use twilight_oauth2::Client as OauthClient;
@@ -10,7 +14,7 @@ mod routes;
 pub struct Config {
     client_id: ApplicationId,
     client_secret: String,
-    redirect_url: String
+    redirect_url: String,
 }
 
 #[launch]
@@ -23,10 +27,15 @@ fn rocket() -> rocket::Rocket {
         config.client_id,
         &config.client_secret,
         &[&config.redirect_url],
-    ).expect("Failed to create oauth client");
+    )
+    .expect("Failed to create oauth client");
 
     rocket::custom(Figment::from(rocket::Config::default()).merge(Env::prefixed("ROCKET_")))
         .manage(oauth)
         .manage(config)
-        .mount("/", routes![routes::index, routes::auth::oauth_login])
+        .manage(ReqClient::new())
+        .mount(
+            "/",
+            routes![routes::index, routes::favicon, routes::auth::oauth_login, routes::auth::oauth_authorize],
+        )
 }

@@ -1,5 +1,5 @@
 use askama::Template;
-use rocket::{get, response::content::Html};
+use rocket::{get, http::Status, response::content::Html};
 
 pub mod auth;
 
@@ -10,6 +10,11 @@ pub fn index() -> Html<String> {
             .render()
             .expect("Failed to render template"),
     )
+}
+
+#[get("/favicon.ico")]
+pub fn favicon() -> Status {
+    Status::NotFound
 }
 
 #[derive(Template)]
