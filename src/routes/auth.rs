@@ -1,18 +1,25 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, time::Duration};
 
 use async_std::sync::RwLock;
 use lazy_static::lazy_static;
 use rand::{thread_rng, Rng};
 use reqwest::header::HeaderMap;
-use rocket::{get, http::Status, response::Redirect, uri, State};
+use rocket::{
+    get,
+    http::{Cookie, CookieJar, SameSite, Status},
+    response::Redirect,
+    uri, State,
+};
 use twilight_oauth2::{
     request::access_token_exchange::AccessTokenExchangeResponse, Client as OauthClient, Prompt,
     Scope,
 };
 
-use crate::Config;
+use crate::{auth::OauthCookie, Config};
 
 const OAUTH_SCOPES: &[Scope] = &[Scope::Identify, Scope::Guilds];
+
+pub const OAUTH_COOKIE_NAME: &str = "vote_oauth_cookie";
 
 lazy_static! {
     static ref STATES: RwLock<HashSet<String>> = RwLock::new(HashSet::new());
@@ -39,12 +46,13 @@ pub async fn oauth_login<'r>(oauth: State<OauthClient, 'r>, config: State<Config
 }
 
 #[get("/oauth/authorize?<code>&<state>")]
-pub async fn oauth_authorize<'a, 'r>(
+pub async fn oauth_authorize<'r>(
     oauth: State<'r, OauthClient>,
     config: State<'r, Config>,
     http: State<'r, reqwest::Client>,
     code: String,
     state: String,
+    cookies: &CookieJar<'r>,
 ) -> Result<Redirect, Status> {
     if !STATES.write().await.remove(&state) {
         return Err(Status::Forbidden);
@@ -76,7 +84,21 @@ pub async fn oauth_authorize<'a, 'r>(
         .await
         .expect("Failed to read response");
 
-    dbg!(response);
+    if response.scope != OAUTH_SCOPES.iter().map(|x| x.name()).collect::<Vec<_>>().join(" ") {
+        return Err(Status::PreconditionFailed);
+    }
+
+    let cookie: OauthCookie = response.into();
+
+    cookies.add_private(
+        Cookie::build(
+            OAUTH_COOKIE_NAME,
+            serde_json::to_string(&cookie).expect("Failed to serialize oauth cookie"),
+        )
+        .domain(config.auth_cookie_domain.clone())
+        .same_site(SameSite::Lax)
+        .finish(),
+    );
 
     Ok(Redirect::to(uri!(super::index)))
 }

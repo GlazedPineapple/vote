@@ -1,10 +1,16 @@
 use askama::Template;
-use rocket::{get, http::Status, response::content::Html};
+use rocket::{get, http::{CookieJar, Status}, response::content::Html};
+
+use self::auth::OAUTH_COOKIE_NAME;
 
 pub mod auth;
 
 #[get("/")]
-pub fn index() -> Html<String> {
+pub fn index(cookies: &CookieJar) -> Html<String> {
+    let auth = cookies.get_private(OAUTH_COOKIE_NAME);
+
+    dbg!(auth);
+
     Html(
         HelloTemplate { name: "cock" }
             .render()

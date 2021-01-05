@@ -15,6 +15,7 @@ pub struct Config {
     client_id: ApplicationId,
     client_secret: String,
     redirect_url: String,
+    auth_cookie_domain: String,
 }
 
 #[launch]
