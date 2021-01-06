@@ -4,11 +4,12 @@ use rocket::{
     launch, routes,
 };
 use serde::Deserialize;
-use twilight_model::id::ApplicationId;
+use twilight_model::id::{ApplicationId, GuildId};
 use twilight_oauth2::Client as OauthClient;
 
 mod auth;
 mod routes;
+mod templates;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
@@ -16,6 +17,7 @@ pub struct Config {
     client_secret: String,
     redirect_url: String,
     auth_cookie_domain: String,
+    guild_id: GuildId,
 }
 
 #[launch]
@@ -37,6 +39,11 @@ fn rocket() -> rocket::Rocket {
         .manage(ReqClient::new())
         .mount(
             "/",
-            routes![routes::index, routes::favicon, routes::auth::oauth_login, routes::auth::oauth_authorize],
+            routes![
+                routes::index,
+                routes::favicon,
+                routes::auth::oauth_login,
+                routes::auth::oauth_authorize
+            ],
         )
 }

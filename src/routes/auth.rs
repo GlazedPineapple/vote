@@ -15,7 +15,7 @@ use twilight_oauth2::{
     Scope,
 };
 
-use crate::{auth::OauthCookie, Config};
+use crate::{Config, auth::{OauthCookie, OauthLoginError}, templates::HtmlRedirect};
 
 const OAUTH_SCOPES: &[Scope] = &[Scope::Identify, Scope::Guilds];
 
@@ -53,7 +53,7 @@ pub async fn oauth_authorize<'r>(
     code: String,
     state: String,
     cookies: &CookieJar<'r>,
-) -> Result<Redirect, Status> {
+) -> Result<HtmlRedirect<'static>, Status> {
     if !STATES.write().await.remove(&state) {
         return Err(Status::Forbidden);
     }
@@ -84,21 +84,34 @@ pub async fn oauth_authorize<'r>(
         .await
         .expect("Failed to read response");
 
-    if response.scope != OAUTH_SCOPES.iter().map(|x| x.name()).collect::<Vec<_>>().join(" ") {
+    if response.scope
+        != OAUTH_SCOPES
+            .iter()
+            .map(|x| x.name())
+            .collect::<Vec<_>>()
+            .join(" ")
+    {
         return Err(Status::PreconditionFailed);
     }
 
-    let cookie: OauthCookie = response.into();
+    let cookie = OauthCookie::login(response, config.guild_id).await;
 
-    cookies.add_private(
-        Cookie::build(
-            OAUTH_COOKIE_NAME,
-            serde_json::to_string(&cookie).expect("Failed to serialize oauth cookie"),
-        )
-        .domain(config.auth_cookie_domain.clone())
-        .same_site(SameSite::Lax)
-        .finish(),
-    );
+    match cookie {
+        Err(OauthLoginError::NotInGuild) => {
+            return Err(Status::UnavailableForLegalReasons);
+        }
+        Ok(cookie) => {
+            cookies.add_private(
+                Cookie::build(
+                    OAUTH_COOKIE_NAME,
+                    serde_json::to_string(&cookie).expect("Failed to serialize oauth cookie"),
+                )
+                .domain(config.auth_cookie_domain.clone())
+                .same_site(SameSite::Lax)
+                .finish(),
+            );
 
-    Ok(Redirect::to(uri!(super::index)))
+            Ok(HtmlRedirect::to("/"))
+        }
+    }
 }

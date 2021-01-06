@@ -12,7 +12,7 @@ dotenv = "0.15"
 envy = "0.4"
 lazy_static = "1.4"
 reqwest = { version = "0.10", features = ["json"] }
-rocket = { git = "https://github.com/SergioBenitez/Rocket", rev = "9671115796e42865eaebd020ac27542802027b02", features = ["secrets"] }
+rocket = { git = "https://github.com/SergioBenitez/Rocket", rev = "fa77435187aaedda73b0caad0ab5bfdb24a8b476", features = ["secrets"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 rand = "0.8"
@@ -20,3 +20,6 @@ sqlx = { version = "0.4", features = ["runtime-async-std-rustls"] }
 twilight-http = "0.2"
 twilight-model = "0.2"
 twilight-oauth2 = { git = "https://github.com/twilight-rs/oauth2", rev = "2de30560ef8da8956890b5e8872269197a374d37" }
+
+[build-dependencies]
+regex = "1.4"
