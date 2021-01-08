@@ -35,6 +35,7 @@ derive_responder!(HelloTemplate<'r>, HtmlRedirect<'r>);
 #[template(path = "hello.html")]
 pub struct HelloTemplate<'a> {
     pub name: &'a str,
+    pub logged_in: bool,
 }
 
 /// Template for redirecting the user using html

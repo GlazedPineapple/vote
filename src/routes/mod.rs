@@ -1,8 +1,6 @@
-use askama::Template;
 use rocket::{
     get,
     http::{CookieJar, Status},
-    response::content::Html,
 };
 
 use crate::templates::HelloTemplate;
@@ -15,9 +13,12 @@ pub mod auth;
 pub fn index(cookies: &CookieJar) -> HelloTemplate<'static> {
     let auth = cookies.get_private(OAUTH_COOKIE_NAME);
 
-    dbg!(auth);
+    dbg!(&auth);
 
-    HelloTemplate { name: "cock" }
+    HelloTemplate {
+        name: "cock",
+        logged_in: auth.is_some(),
+    }
 }
 
 #[get("/favicon.ico")]
