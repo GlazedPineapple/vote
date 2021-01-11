@@ -29,12 +29,12 @@ macro_rules! derive_responder {
     };
 }
 
-derive_responder!(HelloTemplate<'r>, HtmlRedirect<'r>);
+derive_responder!(HelloTemplate, HtmlRedirect<'r>);
 
 #[derive(Template, Debug)]
 #[template(path = "hello.html")]
-pub struct HelloTemplate<'a> {
-    pub name: &'a str,
+pub struct HelloTemplate {
+    pub name: String,
     pub logged_in: bool,
 }
 

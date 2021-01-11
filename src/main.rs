@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 use reqwest::Client as ReqClient;
 use rocket::{
     figment::{providers::Env, Figment},
@@ -22,6 +24,8 @@ pub struct Config {
 
 #[launch]
 fn rocket() -> rocket::Rocket {
+    println!("your dad used unsafe and now you are here");
+
     dotenv::dotenv().ok();
 
     let config: Config = envy::from_env().expect("Missing required environment variables");
@@ -41,6 +45,7 @@ fn rocket() -> rocket::Rocket {
             "/",
             routes![
                 routes::index,
+                routes::index_logged_in,
                 routes::favicon,
                 routes::auth::oauth_login,
                 routes::auth::oauth_authorize

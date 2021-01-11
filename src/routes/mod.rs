@@ -1,23 +1,24 @@
-use rocket::{
-    get,
-    http::{CookieJar, Status},
-};
+use rocket::{get, http::Status};
 
-use crate::templates::HelloTemplate;
-
-use self::auth::OAUTH_COOKIE_NAME;
+use crate::{auth::AuthenticatedUser, templates::HelloTemplate};
 
 pub mod auth;
 
 #[get("/")]
-pub fn index(cookies: &CookieJar) -> HelloTemplate<'static> {
-    let auth = cookies.get_private(OAUTH_COOKIE_NAME);
-
-    dbg!(&auth);
+pub fn index_logged_in(user: AuthenticatedUser) -> HelloTemplate {
+    dbg!(&user);
 
     HelloTemplate {
-        name: "cock",
-        logged_in: auth.is_some(),
+        name: user.name.clone(),
+        logged_in: true,
+    }
+}
+
+#[get("/", rank = 1)]
+pub fn index() -> HelloTemplate {
+    HelloTemplate {
+        name: "cock".to_owned(),
+        logged_in: false,
     }
 }
 

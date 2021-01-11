@@ -1,10 +1,21 @@
+use std::ops::Deref;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use rocket::futures::join;
+use rocket::{
+    futures::join,
+    http::Status,
+    request::{FromRequest, Outcome},
+    Request,
+};
 use serde::{Deserialize, Serialize};
 use twilight_http::Client;
-use twilight_model::{id::GuildId, user::{CurrentUser, CurrentUserGuild}};
+use twilight_model::{
+    id::GuildId,
+    user::{CurrentUser, CurrentUserGuild},
+};
 use twilight_oauth2::{request::access_token_exchange::AccessTokenExchangeResponse, TokenType};
+
+use crate::routes::auth::OAUTH_COOKIE_NAME;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct OauthCookie {
@@ -34,7 +45,10 @@ pub enum OauthLoginError {
 }
 
 impl OauthCookie {
-    pub async fn login(response: AccessTokenExchangeResponse, guild_id: GuildId) -> Result<Self, OauthLoginError> {
+    pub async fn login(
+        response: AccessTokenExchangeResponse,
+        guild_id: GuildId,
+    ) -> Result<Self, OauthLoginError> {
         let AccessTokenExchangeResponse {
             access_token,
             expires_in,
@@ -62,8 +76,41 @@ impl OauthCookie {
                 token_type,
                 user: user.expect("Failed to get the user"),
             })
-        } else {  
+        } else {
             Err(OauthLoginError::NotInGuild)
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct AuthenticatedUser(CurrentUser);
+
+impl Deref for AuthenticatedUser {
+    type Target = CurrentUser;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[rocket::async_trait]
+impl<'a, 'r> FromRequest<'a, 'r> for AuthenticatedUser {
+    type Error = serde_json::Error;
+
+    async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+        let cookies = request.cookies();
+
+        let cookie = cookies.get_private(OAUTH_COOKIE_NAME);
+
+        if let Some(cookie) = cookie {
+            let json = cookie.value();
+
+            match serde_json::from_str::<OauthCookie>(json) {
+                Ok(cookie) => Outcome::Success(Self(cookie.user)),
+                Err(err) => Outcome::Failure((Status::BadRequest, err)),
+            }
+        } else {
+            Outcome::Forward(())
         }
     }
 }
