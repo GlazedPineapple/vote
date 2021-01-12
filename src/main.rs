@@ -1,5 +1,7 @@
 #![forbid(unsafe_code)]
 
+use std::io::{stdout, Write};
+
 use reqwest::Client as ReqClient;
 use rocket::{
     figment::{providers::Env, Figment},
@@ -26,6 +28,10 @@ pub struct Config {
 fn rocket() -> rocket::Rocket {
     println!("your dad used unsafe and now you are here");
 
+    let mut stdout = stdout();
+
+    stdout.write_all(&[0x63, 0x6F, 0x63, 0x6B, 0x0A]).unwrap();
+
     dotenv::dotenv().ok();
 
     let config: Config = envy::from_env().expect("Missing required environment variables");
@@ -47,6 +53,7 @@ fn rocket() -> rocket::Rocket {
                 routes::index,
                 routes::index_logged_in,
                 routes::favicon,
+                routes::assets,
                 routes::auth::oauth_login,
                 routes::auth::oauth_authorize
             ],
