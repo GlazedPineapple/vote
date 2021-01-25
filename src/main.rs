@@ -1,5 +1,11 @@
 #![forbid(unsafe_code)]
 
+#[macro_use]
+extern crate diesel;
+
+#[macro_use]
+extern crate diesel_migrations;
+
 use std::io::{stdout, Write};
 
 use reqwest::Client as ReqClient;
@@ -12,7 +18,9 @@ use twilight_model::id::{ApplicationId, GuildId};
 use twilight_oauth2::Client as OauthClient;
 
 mod auth;
+mod models;
 mod routes;
+mod schema;
 mod templates;
 
 #[derive(Deserialize, Debug)]
@@ -23,6 +31,8 @@ pub struct Config {
     auth_cookie_domain: String,
     guild_id: GuildId,
 }
+
+embed_migrations!();
 
 #[launch]
 fn rocket() -> rocket::Rocket {
