@@ -117,6 +117,7 @@ dependencies = [
  "proc-macro2 1.0.24",
  "quote 1.0.8",
  "serde",
+ "serde_json",
  "syn 1.0.56",
  "toml",
 ]
@@ -1856,6 +1857,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocket_contrib"
+version = "0.5.0-dev"
+source = "git+https://github.com/SergioBenitez/Rocket?rev=fa77435187aaedda73b0caad0ab5bfdb24a8b476#fa77435187aaedda73b0caad0ab5bfdb24a8b476"
+dependencies = [
+ "log",
+ "rocket",
+ "time",
+ "uuid",
+]
+
+[[package]]
 name = "rocket_http"
 version = "0.5.0-dev"
 source = "git+https://github.com/SergioBenitez/Rocket?rev=fa77435187aaedda73b0caad0ab5bfdb24a8b476#fa77435187aaedda73b0caad0ab5bfdb24a8b476"
@@ -2653,6 +2665,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rocket",
+ "rocket_contrib",
  "rust-embed",
  "serde",
  "serde_json",

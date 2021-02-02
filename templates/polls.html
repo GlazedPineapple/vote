@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>All polls</title>
+        <style>
+            td, tr, th, table {
+                border: solid black 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <thead>
+                <tr>
+                    <th>Poll Id</th>
+                    <th>Poll Total</th>
+                    <th>Poll Moderators</th>
+                    <th>Poll Choices</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for poll in polls %}
+                    <tr>
+                        <td>{{poll.id.to_string()}}</td>
+                        <td>{{poll.title}}</td>
+                        <td>
+                            <ul>
+                                {% for moderator in poll.clone().moderators %}
+                                    <li>{{moderator}}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                {% for (uuid, choice) in poll.clone().choices %}
+                                    <li>Prez: {{choice.president}}, VP: {{choice.vice_president}}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+</html>

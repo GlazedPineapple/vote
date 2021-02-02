@@ -10,6 +10,7 @@ use rust_embed::RustEmbed;
 use crate::{auth::AuthenticatedUser, templates::HelloTemplate};
 
 pub mod auth;
+pub mod polls;
 
 #[get("/")]
 pub fn index_logged_in(user: AuthenticatedUser) -> HelloTemplate {

@@ -1,5 +1,7 @@
 use askama::Template;
 
+use crate::models::Poll;
+
 macro_rules! derive_responder {
     ($($st:ty),+) => {
         use std::io::Cursor;
@@ -29,7 +31,7 @@ macro_rules! derive_responder {
     };
 }
 
-derive_responder!(HelloTemplate, HtmlRedirect<'r>);
+derive_responder!(HelloTemplate, HtmlRedirect<'r>, PollsList);
 
 #[derive(Template, Debug)]
 #[template(path = "hello.html")]
@@ -54,4 +56,10 @@ impl<'a> HtmlRedirect<'a> {
     pub fn to(url: &'a str) -> Self {
         HtmlRedirect { url }
     }
+}
+
+#[derive(Template, Debug)]
+#[template(path = "polls.html", print = "code")]
+pub struct PollsList {
+    pub polls: Vec<Poll>
 }

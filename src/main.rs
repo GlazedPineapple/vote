@@ -13,6 +13,7 @@ use rocket::{
     figment::{providers::Env, Figment},
     launch, routes,
 };
+use rocket_contrib::helmet::SpaceHelmet;
 use serde::Deserialize;
 use twilight_model::id::{ApplicationId, GuildId};
 use twilight_oauth2::Client as OauthClient;
@@ -65,7 +66,10 @@ fn rocket() -> rocket::Rocket {
                 routes::favicon,
                 routes::assets,
                 routes::auth::oauth_login,
-                routes::auth::oauth_authorize
+                routes::auth::oauth_authorize,
+                routes::polls::all_polls,
+                routes::polls::poll_by_id,
             ],
         )
+        .attach(SpaceHelmet::default())
 }
