@@ -4,6 +4,7 @@ table! {
         user -> Text,
         poll -> Text,
         ranking -> Text,
+        timestamp -> Text,
     }
 }
 
@@ -13,6 +14,7 @@ table! {
         title -> Text,
         moderators -> Text,
         choices -> Text,
+        timestamp -> Text,
     }
 }
 

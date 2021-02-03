@@ -27,7 +27,7 @@ fn main() -> io::Result<()> {
 
             fs::write(
                 example_dotenv,
-                Regex::new("\".*\"")
+                Regex::new("[\"'].*[\"']")
                     .unwrap()
                     .replace_all(&contents, "")
                     .as_bytes(),

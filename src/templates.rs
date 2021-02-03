@@ -1,6 +1,11 @@
-use askama::Template;
+use std::collections::HashMap;
 
-use crate::models::Poll;
+use askama::Template;
+use chrono::{DateTime, Utc};
+use twilight_model::id::UserId;
+use uuid::Uuid;
+
+use crate::models::{Candidates, PollRow};
 
 macro_rules! derive_responder {
     ($($st:ty),+) => {
@@ -59,7 +64,23 @@ impl<'a> HtmlRedirect<'a> {
 }
 
 #[derive(Template, Debug)]
-#[template(path = "polls.html", print = "code")]
+#[template(path = "polls.html")]
 pub struct PollsList {
-    pub polls: Vec<Poll>
+    pub polls: Vec<PollRow>,
 }
+
+mod filters {
+    use chrono::{DateTime, Utc};
+    use humantime::format_duration;
+
+    pub fn humantime<T: AsRef<DateTime<Utc>>>(time: T) -> askama::Result<String> {
+        Ok(format_duration(
+            Utc::now()
+                .signed_duration_since(*time.as_ref())
+                .to_std()
+                .expect("Time went backwards"),
+        )
+        .to_string())
+    }
+}
+

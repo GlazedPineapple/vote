@@ -15,7 +15,11 @@ use twilight_oauth2::{
     Scope,
 };
 
-use crate::{Config, auth::{OauthCookie, OauthLoginError}, templates::HtmlRedirect};
+use crate::{
+    auth::{OauthCookie, OauthLoginError},
+    templates::HtmlRedirect,
+    Config,
+};
 
 const OAUTH_SCOPES: &[Scope] = &[Scope::Identify, Scope::Guilds];
 

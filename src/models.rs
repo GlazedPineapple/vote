@@ -1,9 +1,8 @@
 use std::{collections::HashMap, io::Write};
 
 use super::schema::{cast_votes, polls};
-use derive_more::{
-    AsRef, Constructor, Deref, DerefMut, From, Index, IndexMut, Into, IntoIterator,
-};
+use chrono::{DateTime, Utc};
+use derive_more::{AsRef, Constructor, Deref, DerefMut, From, Index, IndexMut, Into, IntoIterator};
 use diesel::{
     backend::Backend,
     deserialize, serialize,
@@ -69,6 +68,7 @@ serde_sql_wrapper! {
     pub struct PollId(Uuid);
     pub struct VoteId(Uuid);
     pub struct DiscordUser(UserId);
+    pub struct Timestamp(DateTime<Utc>);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -78,18 +78,21 @@ pub struct Candidates {
 }
 
 #[derive(Queryable, Insertable, Debug, Clone)]
-pub struct Poll {
+#[table_name="polls"]
+pub struct PollRow {
     pub id: PollId,
     pub title: String,
     pub moderators: Moderators,
     pub choices: Choices,
-    // TODO: ADD DATE OF POLL
+    pub timestamp: Timestamp
 }
 
 #[derive(Queryable, Insertable, Debug, Clone)]
-pub struct CastVote {
+#[table_name="cast_votes"]
+pub struct CastVoteRow {
     pub id: VoteId,
     pub user: DiscordUser,
     pub poll: PollId,
     pub ranking: Ranking,
+    pub timestamp: Timestamp
 }

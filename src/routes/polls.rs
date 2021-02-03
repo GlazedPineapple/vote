@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use rocket::{
     get,
     http::{ContentType, Status},
@@ -8,7 +9,7 @@ use twilight_model::id::UserId;
 use uuid::Uuid;
 
 use crate::{
-    models::{Candidates, Choices, DiscordUser, Moderators, Poll, PollId, Ranking, VoteId},
+    models::{Candidates, Choices, DiscordUser, Moderators, PollId, PollRow, Ranking, VoteId},
     templates::PollsList,
 };
 
@@ -16,12 +17,10 @@ use crate::{
 pub fn all_polls() -> PollsList {
     PollsList {
         polls: vec![
-            Poll {
+            PollRow {
                 id: Uuid::new_v4().into(),
                 title: "cock".into(),
-                moderators: Moderators::new(
-                    [69, 420, 69420].iter().copied().map(UserId).collect(),
-                ),
+                moderators: Moderators::new([69, 420, 69420].iter().copied().map(UserId).collect()),
                 choices: Choices::new(
                     [
                         Candidates {
@@ -42,8 +41,12 @@ pub fn all_polls() -> PollsList {
                     .map(|c| (Uuid::new_v4(), c))
                     .collect(),
                 ),
+                timestamp: (DateTime::parse_from_rfc2822("Wed, 18 Feb 2015 23:16:09 GMT")
+                    .unwrap()
+                    .with_timezone(&Utc))
+                .into(),
             },
-            Poll {
+            PollRow {
                 id: Uuid::new_v4().into(),
                 title: "My PENIS :D".into(),
                 moderators: Moderators::new(
@@ -73,6 +76,7 @@ pub fn all_polls() -> PollsList {
                     .map(|c| (Uuid::new_v4(), c))
                     .collect(),
                 ),
+                timestamp: Utc::now().into(),
             },
         ],
     }

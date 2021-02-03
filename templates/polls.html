@@ -18,6 +18,7 @@
                     <th>Poll Total</th>
                     <th>Poll Moderators</th>
                     <th>Poll Choices</th>
+                    <th>Poll Timestamp</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,18 +28,19 @@
                         <td>{{poll.title}}</td>
                         <td>
                             <ul>
-                                {% for moderator in poll.clone().moderators %}
+                                {% for moderator in poll.moderators.as_ref() %}
                                     <li>{{moderator}}</li>
                                 {% endfor %}
                             </ul>
                         </td>
                         <td>
                             <ul>
-                                {% for (uuid, choice) in poll.clone().choices %}
+                                {% for (uuid, choice) in poll.choices.as_ref() %}
                                     <li>Prez: {{choice.president}}, VP: {{choice.vice_president}}</li>
                                 {% endfor %}
                             </ul>
                         </td>
+                        <td>{{poll.timestamp | humantime}}</td>
                     </tr>
                 {% endfor %}
             </tbody>

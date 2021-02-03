@@ -10,10 +10,11 @@ use std::io::{stdout, Write};
 
 use reqwest::Client as ReqClient;
 use rocket::{
+    fairing::AdHoc,
     figment::{providers::Env, Figment},
     launch, routes,
 };
-use rocket_contrib::helmet::SpaceHelmet;
+use rocket_contrib::{database, helmet::SpaceHelmet};
 use serde::Deserialize;
 use twilight_model::id::{ApplicationId, GuildId};
 use twilight_oauth2::Client as OauthClient;
@@ -33,7 +34,8 @@ pub struct Config {
     guild_id: GuildId,
 }
 
-embed_migrations!();
+#[database("polls")]
+pub struct PollsDatabase(diesel::SqliteConnection);
 
 #[launch]
 fn rocket() -> rocket::Rocket {
@@ -72,4 +74,20 @@ fn rocket() -> rocket::Rocket {
             ],
         )
         .attach(SpaceHelmet::default())
+        .attach(PollsDatabase::fairing())
+        .attach(AdHoc::on_attach("Database Migrations", |rocket| async {
+            embed_migrations!();
+
+            PollsDatabase::get_one(&rocket)
+                .await
+                .expect("Failed to create a db connection")
+                .run(|conn| match embedded_migrations::run(&*conn) {
+                    Ok(()) => Ok(rocket),
+                    Err(e) => {
+                        eprintln!("Failed to run database migrations: {:?}", e);
+                        Err(rocket)
+                    }
+                })
+                .await
+        }))
 }
